@@ -631,6 +631,7 @@ class DivineNamesDatabase {
     }
   }
 
+
   // Search names by English name
   Future<List<Map<String, dynamic>>> searchByEnglishName(String query) async {
     try {

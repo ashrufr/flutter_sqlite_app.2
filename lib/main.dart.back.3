@@ -60,18 +60,12 @@ class AppHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3, // Number of tabs increased to 3
+      length: 2, // Number of tabs
       child: Scaffold(
         appBar: AppBar(
           title: const Text('99 Names of Allah'),
           centerTitle: true,
           elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              Scaffold.of(context).openDrawer(); // Open drawer
-            },
-          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.info_outline),
@@ -84,7 +78,6 @@ class AppHomeScreen extends StatelessWidget {
             tabs: [
               Tab(text: 'Details'),
               Tab(text: 'All Names'),
-              Tab(text: 'Flashcards'), // New tab
             ],
           ),
         ),
@@ -92,7 +85,6 @@ class AppHomeScreen extends StatelessWidget {
           children: [
             DivineNamesScreen(),
             AllNamesListScreen(),
-            FlashcardsScreen(), // New screen
           ],
         ),
       ),
@@ -351,136 +343,6 @@ class _AllNamesListScreenState extends State<AllNamesListScreen> {
                     );
                   },
                 ),
-    );
-  }
-}
-
-class FlashcardsScreen extends StatefulWidget {
-  const FlashcardsScreen({Key? key}) : super(key: key);
-
-  @override
-  State<FlashcardsScreen> createState() => _FlashcardsScreenState();
-}
-
-class _FlashcardsScreenState extends State<FlashcardsScreen> {
-  final DivineNamesDatabase _databaseHelper = DivineNamesDatabase();
-  List<Map<String, dynamic>> _namesList = [];
-  bool _isLoading = true;
-  String _errorMessage = '';
-  int _currentCardIndex = 0;
-  bool _isFlipped = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAllNames();
-  }
-
-  Future<void> _loadAllNames() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    try {
-      final names = await _databaseHelper.getAllNames();
-      setState(() {
-        _namesList = names;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Error loading names: $e';
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _flipCard() {
-    setState(() {
-      _isFlipped = !_isFlipped;
-    });
-  }
-
-  void _nextCard() {
-    setState(() {
-      _isFlipped = false; // Reset flip state
-      if (_currentCardIndex < _namesList.length - 1) {
-        _currentCardIndex++;
-      } else {
-        _currentCardIndex = 0; // Loop back to the beginning
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage.isNotEmpty
-              ? Center(
-                  child: Text(
-                    _errorMessage,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                )
-              : GestureDetector(
-                  onTap: _flipCard,
-                  child: Center(
-                    child: Card(
-                      elevation: 4,
-                      margin: const EdgeInsets.all(20),
-                      child: SizedBox(
-                        width: 300,
-                        height: 400,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Card ${_currentCardIndex + 1} of ${_namesList.length}',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 500),
-                                transitionBuilder: (Widget child, Animation<double> animation) {
-                                  return RotationTransition(
-                                    turns: animation,
-                                    child: child,
-                                  );
-                                },
-                                child: _isFlipped
-                                    ? Text(
-                                        '${_namesList[_currentCardIndex][DivineNamesDatabase.COLUMN_ARABIC_NAME] ?? ''}\n\n${_namesList[_currentCardIndex][DivineNamesDatabase.COLUMN_DESCRIPTION] ?? ''}',
-                                        key: ValueKey<bool>(_isFlipped), // Important for the animation
-                                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                                        textAlign: TextAlign.center,
-                                      )
-                                    : Text(
-                                        _namesList[_currentCardIndex][DivineNamesDatabase.COLUMN_ENGLISH_NAME] ?? '',
-                                        key: ValueKey<bool>(_isFlipped), // Important for the animation
-                                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                                        textAlign: TextAlign.center,
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _nextCard,
-        tooltip: 'Next Card',
-        child: const Icon(Icons.arrow_forward),
-      ),
     );
   }
 }

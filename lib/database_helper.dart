@@ -105,6 +105,12 @@ class DatabaseHelper {
     
     return result.isNotEmpty ? result.first : null;
   }
+
+  Future<List<Map<String, dynamic>>> getAllNames() async {
+    final db = await database;
+    return await db.query(tableName);
+  }
+
   
   Future<int> getRecordCount() async {
     final Database db = await database;

@@ -46,56 +46,10 @@ class DivineNamesApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const AppHomeScreen(), // Changed to AppHomeScreen
+      home: const DivineNamesScreen(),
       routes: {
         '/about': (context) => const AboutScreen(),
       },
-    );
-  }
-}
-
-class AppHomeScreen extends StatelessWidget {
-  const AppHomeScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3, // Number of tabs increased to 3
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('99 Names of Allah'),
-          centerTitle: true,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              Scaffold.of(context).openDrawer(); // Open drawer
-            },
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.info_outline),
-              onPressed: () {
-                Navigator.pushNamed(context, '/about');
-              },
-            ),
-          ],
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Details'),
-              Tab(text: 'All Names'),
-              Tab(text: 'Flashcards'), // New tab
-            ],
-          ),
-        ),
-        body: const TabBarView(
-          children: [
-            DivineNamesScreen(),
-            AllNamesListScreen(),
-            FlashcardsScreen(), // New screen
-          ],
-        ),
-      ),
     );
   }
 }
@@ -162,6 +116,19 @@ class _DivineNamesScreenState extends State<DivineNamesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('99 Names of Allah'),
+        centerTitle: true,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () {
+              Navigator.pushNamed(context, '/about');
+            },
+          ),
+        ],
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage.isNotEmpty
@@ -191,11 +158,12 @@ class _DivineNamesScreenState extends State<DivineNamesScreen> {
                       Expanded(
                         child: Center(
                           child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 800),
+                            constraints: const BoxConstraints(maxWidth: 800), // Constraint for better desktop experience
                             child: SingleChildScrollView(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
+                                  // Name counter
                                   Text(
                                     'Name $_currentNameId of $_totalNames',
                                     style: TextStyle(
@@ -203,12 +171,14 @@ class _DivineNamesScreenState extends State<DivineNamesScreen> {
                                       color: Colors.grey[600],
                                     ),
                                   ),
+                                  // Arabic name
                                   Text(
                                     _currentName?[DivineNamesDatabase.COLUMN_ARABIC_NAME] ?? '',
                                     style: Theme.of(context).textTheme.displayLarge,
                                     textAlign: TextAlign.center,
                                   ),
                                   const SizedBox(height: 20),
+                                  // English name
                                   Text(
                                     _currentName?[DivineNamesDatabase.COLUMN_ENGLISH_NAME] ?? '',
                                     style: const TextStyle(
@@ -219,6 +189,7 @@ class _DivineNamesScreenState extends State<DivineNamesScreen> {
                                     textAlign: TextAlign.center,
                                   ),
                                   const SizedBox(height: 40),
+                                  // Description
                                   Container(
                                     padding: const EdgeInsets.all(20),
                                     decoration: BoxDecoration(
@@ -240,10 +211,12 @@ class _DivineNamesScreenState extends State<DivineNamesScreen> {
                           ),
                         ),
                       ),
+                      // Navigation buttons
                       const SizedBox(height: 20),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center, // Center buttons for desktop
                         children: [
+                          // Previous button
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8.0),
                             child: ElevatedButton.icon(
@@ -253,10 +226,11 @@ class _DivineNamesScreenState extends State<DivineNamesScreen> {
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                                 disabledBackgroundColor: Colors.grey.withOpacity(0.3),
-                                minimumSize: const Size(150, 48),
+                                minimumSize: const Size(150, 48), // Larger touch target for desktop
                               ),
                             ),
                           ),
+                          // Next button
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8.0),
                             child: ElevatedButton.icon(
@@ -266,7 +240,7 @@ class _DivineNamesScreenState extends State<DivineNamesScreen> {
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                                 disabledBackgroundColor: Colors.grey.withOpacity(0.3),
-                                minimumSize: const Size(150, 48),
+                                minimumSize: const Size(150, 48), // Larger touch target for desktop
                               ),
                             ),
                           ),
@@ -275,212 +249,6 @@ class _DivineNamesScreenState extends State<DivineNamesScreen> {
                     ],
                   ),
                 ),
-    );
-  }
-}
-
-class AllNamesListScreen extends StatefulWidget {
-  const AllNamesListScreen({Key? key}) : super(key: key);
-
-  @override
-  State<AllNamesListScreen> createState() => _AllNamesListScreenState();
-}
-
-class _AllNamesListScreenState extends State<AllNamesListScreen> {
-  final DivineNamesDatabase _databaseHelper = DivineNamesDatabase();
-  List<Map<String, dynamic>> _namesList = [];
-  bool _isLoading = true;
-  String _errorMessage = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAllNames();
-  }
-
-  Future<void> _loadAllNames() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    try {
-      final names = await _databaseHelper.getAllNames();
-      setState(() {
-        _namesList = names;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Error loading names: $e';
-        _isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage.isNotEmpty
-              ? Center(
-                  child: Text(
-                    _errorMessage,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: _namesList.length,
-                  itemBuilder: (context, index) {
-                    final name = _namesList[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      child: ListTile(
-                        title: Text(
-                          name[DivineNamesDatabase.COLUMN_ENGLISH_NAME] ?? '',
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                        subtitle: Text(name[DivineNamesDatabase.COLUMN_ARABIC_NAME] ?? ''),
-                        onTap: () {
-                          // TODO: Implement navigation to details page for the selected name
-                          // For now, just print the name to the console
-                          print('Tapped on ${name[DivineNamesDatabase.COLUMN_ENGLISH_NAME]}');
-                        },
-                      ),
-                    );
-                  },
-                ),
-    );
-  }
-}
-
-class FlashcardsScreen extends StatefulWidget {
-  const FlashcardsScreen({Key? key}) : super(key: key);
-
-  @override
-  State<FlashcardsScreen> createState() => _FlashcardsScreenState();
-}
-
-class _FlashcardsScreenState extends State<FlashcardsScreen> {
-  final DivineNamesDatabase _databaseHelper = DivineNamesDatabase();
-  List<Map<String, dynamic>> _namesList = [];
-  bool _isLoading = true;
-  String _errorMessage = '';
-  int _currentCardIndex = 0;
-  bool _isFlipped = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAllNames();
-  }
-
-  Future<void> _loadAllNames() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    try {
-      final names = await _databaseHelper.getAllNames();
-      setState(() {
-        _namesList = names;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Error loading names: $e';
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _flipCard() {
-    setState(() {
-      _isFlipped = !_isFlipped;
-    });
-  }
-
-  void _nextCard() {
-    setState(() {
-      _isFlipped = false; // Reset flip state
-      if (_currentCardIndex < _namesList.length - 1) {
-        _currentCardIndex++;
-      } else {
-        _currentCardIndex = 0; // Loop back to the beginning
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage.isNotEmpty
-              ? Center(
-                  child: Text(
-                    _errorMessage,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                )
-              : GestureDetector(
-                  onTap: _flipCard,
-                  child: Center(
-                    child: Card(
-                      elevation: 4,
-                      margin: const EdgeInsets.all(20),
-                      child: SizedBox(
-                        width: 300,
-                        height: 400,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Card ${_currentCardIndex + 1} of ${_namesList.length}',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 500),
-                                transitionBuilder: (Widget child, Animation<double> animation) {
-                                  return RotationTransition(
-                                    turns: animation,
-                                    child: child,
-                                  );
-                                },
-                                child: _isFlipped
-                                    ? Text(
-                                        '${_namesList[_currentCardIndex][DivineNamesDatabase.COLUMN_ARABIC_NAME] ?? ''}\n\n${_namesList[_currentCardIndex][DivineNamesDatabase.COLUMN_DESCRIPTION] ?? ''}',
-                                        key: ValueKey<bool>(_isFlipped), // Important for the animation
-                                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                                        textAlign: TextAlign.center,
-                                      )
-                                    : Text(
-                                        _namesList[_currentCardIndex][DivineNamesDatabase.COLUMN_ENGLISH_NAME] ?? '',
-                                        key: ValueKey<bool>(_isFlipped), // Important for the animation
-                                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                                        textAlign: TextAlign.center,
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _nextCard,
-        tooltip: 'Next Card',
-        child: const Icon(Icons.arrow_forward),
-      ),
     );
   }
 }
