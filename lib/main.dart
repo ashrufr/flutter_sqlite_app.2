@@ -413,6 +413,15 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
     });
   }
 
+  void _randomCard() {
+    setState(() {
+      _isFlipped = false; // Reset flip state
+      if (_namesList.isNotEmpty) {
+        _currentCardIndex = (List.generate(_namesList.length, (i) => i)..shuffle()).first;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -476,10 +485,21 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                     ),
                   ),
                 ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _nextCard,
-        tooltip: 'Next Card',
-        child: const Icon(Icons.arrow_forward),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: _randomCard,
+            tooltip: 'Random Card',
+            child: const Icon(Icons.shuffle),
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton(
+            onPressed: _nextCard,
+            tooltip: 'Next Card',
+            child: const Icon(Icons.arrow_forward),
+          ),
+        ],
       ),
     );
   }
